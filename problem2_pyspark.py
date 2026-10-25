@@ -22,7 +22,7 @@ df.write \
     .option("user", "dbadmin") \
     .option("password", "testpassword") \
     .option("driver", "org.mariadb.jdbc.Driver") \
-    .mode("overwrite") \
+    .mode("append") \
     .save()
 
 spark.stop()
