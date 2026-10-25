@@ -1,12 +1,12 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import avg, col, regexp_replace
+from pyspark.sql.functions import avg, expr
 
 # Create SparkSession
 spark = SparkSession.builder \
     .appName("Workers DataFrame Average Salary") \
     .getOrCreate()
 
-# Read workers_pyspark_df directly from MariaDB
+# Read workers_pyspark_df directly from Assignment3 database
 df = spark.read.format("jdbc") \
     .option(
         "url",
@@ -21,19 +21,34 @@ df = spark.read.format("jdbc") \
 print("\nData loaded from workers_pyspark_df:")
 df.show(truncate=False)
 
-# Convert Salary from "120,000" to 120000.0
+print("\nOriginal Schema:")
+df.printSchema()
+
+# Remove comma from Salary and convert Salary to DOUBLE
 df_numeric = df.withColumn(
     "SalaryNumeric",
-    regexp_replace(col("Salary"), ",", "").cast("double")
+    expr("try_cast(replace(Salary, ',', '') AS DOUBLE)")
 )
 
-# Compute average salary by Gender and Department
-result = df_numeric \
-    .groupBy("Gender", "Department") \
-    .agg(
-        avg("SalaryNumeric").alias("Average_Salary")
-    ) \
-    .orderBy("Gender", "Department")
+print("\nData after Salary conversion:")
+df_numeric.show(truncate=False)
+
+# Group by Gender and Department
+DF2 = df_numeric.groupBy(
+    "Gender",
+    "Department"
+)
+
+# Calculate average salary
+DF3 = DF2.agg(
+    avg("SalaryNumeric").alias("Average_Salary")
+)
+
+# Sort results
+result = DF3.orderBy(
+    "Gender",
+    "Department"
+)
 
 print("\nAverage Salary Results - DataFrame:")
 result.show(truncate=False)
