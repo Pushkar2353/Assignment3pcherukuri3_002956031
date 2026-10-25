@@ -4,7 +4,7 @@ spark = SparkSession.builder.appName("Reading DB table")\
              .getOrCreate()
 # 5.Reading a JDBC table with custom query:
 df = spark.read.format("jdbc")\
-          .option("url", "jdbc:mysql://192.168.1.6:3306/GSU?permitMysqlScheme")\
+          .option("url", "jdbc:mysql://192.168.1.5:3306/GSU")\
           .option("dbtable", "CSstudents")\
           .option("user", "dbadmin")\
           .option("password", "testpassword")\
