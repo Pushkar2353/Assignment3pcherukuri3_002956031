@@ -6,11 +6,11 @@ spark = SparkSession.builder \
     .appName("Workers DataFrame Average Salary") \
     .getOrCreate()
 
-# Read workers_pyspark_df from Assignment3 MariaDB database
+# Read workers_pyspark_df directly from MariaDB
 df = spark.read.format("jdbc") \
     .option(
         "url",
-        "jdbc:mariadb://192.168.1.5:3306/Assignment3"
+        "jdbc:mysql://192.168.1.5:3306/Assignment3?permitMysqlScheme"
     ) \
     .option("dbtable", "workers_pyspark_df") \
     .option("user", "dbadmin") \
@@ -24,8 +24,8 @@ df.show(20, truncate=False)
 print("\n=== ORIGINAL SCHEMA ===")
 df.printSchema()
 
-# Convert Salary: "120,000" -> 120000
-df2 = df.withColumn(
+# Convert salary from text such as "120,000" to 120000.0
+df_numeric = df.withColumn(
     "SalaryNumeric",
     regexp_replace(
         col("Salary"),
@@ -35,20 +35,17 @@ df2 = df.withColumn(
 )
 
 print("\n=== DATA AFTER SALARY CONVERSION ===")
-df2.show(20, truncate=False)
+df_numeric.show(20, truncate=False)
 
-# Calculate average salary for each Gender + Department combination
-result = df2.groupBy(
-    "Gender",
-    "Department"
-).agg(
-    avg("SalaryNumeric").alias("Average_Salary")
-)
+# Calculate average salary for Gender + Department
+result = df_numeric \
+    .groupBy("Gender", "Department") \
+    .agg(
+        avg("SalaryNumeric").alias("Average_Salary")
+    ) \
+    .orderBy("Gender", "Department")
 
 print("\n=== AVERAGE SALARY RESULTS ===")
-result.orderBy(
-    "Gender",
-    "Department"
-).show(truncate=False)
+result.show(truncate=False)
 
 spark.stop()
