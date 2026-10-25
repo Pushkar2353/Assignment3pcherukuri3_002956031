@@ -17,7 +17,7 @@ df.printSchema()
 # Save DataFrame to MariaDB
 df.write \
     .format("jdbc") \
-    .option("url", "jdbc:mariadb://192.168.1.5:3306/GSU") \
+    .option("url", "jdbc:mariadb://192.168.1.5:3306/Assignment3") \
     .option("dbtable", "workers_pyspark_df") \
     .option("user", "dbadmin") \
     .option("password", "testpassword") \
